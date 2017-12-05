@@ -18,7 +18,7 @@ public class OneHiddenLayer extends ANN{
 		inLayer=new LinkedList<>();//initialisation List and Activation
 		outLayer=new LinkedList<>();
 		hiddenLayer=new LinkedList<>();
-		Activation act=new Linear();
+		Activation act=new Sigmoid();
 		// to be completed
 		for (int i = 0; i < 10; i++) {       //initialize outlayer and inputlayer
 			outLayer.add(new Neuron(act));
@@ -71,9 +71,8 @@ public class OneHiddenLayer extends ANN{
 			inputNeuronIterator.next().feed(inIterator.next());
 		}
 
-		Iterator<Neuron> hiddeniterator=hiddenLayer.iterator();
-		while (hiddeniterator.hasNext()){
-			hiddeniterator.next().feed();
+		for (Neuron aHiddenLayer : hiddenLayer) {
+			aHiddenLayer.feed();
 		}
 		for (int j=0;j<10;j++) {
 			outLayer.get(j).feed();
@@ -101,9 +100,12 @@ public class OneHiddenLayer extends ANN{
 				feed(in);
 				j=0;
 				outiterator=outLayer.iterator();
+				for (int k = 0; k < 10; k++) {
+					outLayer.get(k).error=(value[k]-outLayer.get(k).getCurrentOutput())*
+							outLayer.get(k).getCurrentOutput()*(1-outLayer.get(k).getCurrentOutput());
+				}
 				while (outiterator.hasNext()){
 					outiterator.next().backPropagate(value[j]);
-					//outiterator.next();
 					j++;
 				}
 				j=0;

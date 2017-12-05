@@ -62,7 +62,8 @@ public class Neuron {
 	public void initWeights(){
 		// to be completed
 		for (Neuron neuron:parents) {
-			w.put(neuron, /*-0.1 +*/ (Math.random()/784));
+			w.put(neuron, /*-0.1*/ generator.nextGaussian()/10);///784));
+			//w.put(neuron,generator.nextDouble()/(5*784));
 		}
 	}
 
@@ -76,8 +77,10 @@ public class Neuron {
 		// to be completed
 		out=0;
 		for (Neuron neuron:parents) {
+			//System.out.println(neuron.getCurrentOutput()*w.get(neuron));
 			out+=neuron.getCurrentOutput()*w.get(neuron);
 		}
+		//System.out.println(out);
 		out=h.activate(out);
 
 	}
@@ -89,32 +92,31 @@ public class Neuron {
 	 * @param target is the correct value.
 	 */
 	public void backPropagate(double target){
-		// to be completed
-		//System.out.println("target = " + target);
-		double delta= this.out*(1-this.out)*(target-this.out);//(target-out);//
-        /*System.out.println("out = " + out);
-        System.out.println("delta = " + delta);*/
-        /*double deltaParent=0;
-        for (Neuron neuron:parents) {
-            for (Neuron child:neuron.children) {
-                deltaParent=0;
-                deltaParent+=delta*child.w.get(neuron);
-            }
-            deltaParent=deltaParent*neuron.getCurrentOutput()*(1-neuron.getCurrentOutput());
-            w.put(neuron,w.get(neuron)+eta*deltaParent*neuron.getCurrentOutput());
-        }*/
-		//double test;
-		for (Neuron neuron:parents) {
-			// test=w.get(neuron);
-			w.put(neuron,w.get(neuron)+eta*delta*neuron.getCurrentOutput());
-			//System.out.println(eta*delta*neuron.getCurrentOutput());
-            /*if(test-w.get(neuron)!=0) {
-                System.out.println("if = " + (test - w.get(neuron)));
-            }*/
+		double delta= this.out*(1-this.out)*(target-this.out);//((target-out);//
+
+		double deltahidden=0;
+		if(!(parents.get(0) instanceof InputNeuron)){
+			for (Neuron hiddenneuron:parents) {
+				for (Neuron chiledofhidden:hiddenneuron.children) {
+					deltahidden+=chiledofhidden.getError()*chiledofhidden.w.get(hiddenneuron);
+				}
+				hiddenneuron.error=deltahidden*(hiddenneuron.getCurrentOutput())*(1-hiddenneuron.getCurrentOutput());
+				deltahidden=0;
+			}
+			for (Neuron hiddenneuron:parents) {
+				w.put(hiddenneuron,w.get(hiddenneuron)+eta*delta*hiddenneuron.getCurrentOutput());
+				for (Neuron inputneuron:hiddenneuron.parents){
+					hiddenneuron.w.put(inputneuron,hiddenneuron.w.get(inputneuron)+eta*hiddenneuron.getError()*inputneuron.getCurrentOutput());
+				}
+			}
 		}
+		else {
+			for (Neuron neuron : parents) {
 
+				w.put(neuron, w.get(neuron) + eta * delta * neuron.getCurrentOutput());
 
-
+			}
+		}
 	}
 
 
