@@ -9,21 +9,22 @@ public class OneHiddenLayer extends ANN{
 	int numHiddenNeurons = 10;
 
 
-	public OneHiddenLayer(Map<Input, Output> trainingData, Map<Input, Output> testingData) {
+	public OneHiddenLayer(Map<Input, Output> trainingData, Map<Input, Output> testingData, int numHiddenNeurons) {
 		generator = new Random();
 		this.trainingData = trainingData;
 		this.testingData = testingData;
 
-		// to be completed
 		inLayer=new LinkedList<>();//initialisation List and Activation
 		outLayer=new LinkedList<>();
 		hiddenLayer=new LinkedList<>();
 		Activation act=new Sigmoid();
-		// to be completed
+		this.numHiddenNeurons=numHiddenNeurons;
+
 		for (int i = 0; i < 10; i++) {       //initialize outlayer and inputlayer
 			outLayer.add(new Neuron(act));
 		}
 		Iterator<Neuron> outiterator = outLayer.iterator();
+
 		for (int i = 0; i < numHiddenNeurons; i++) {
 			Neuron neuron=new Neuron(act);
 			hiddenLayer.add(neuron);
@@ -58,11 +59,12 @@ public class OneHiddenLayer extends ANN{
 			initerator=inLayer.iterator();
 			neuron.initWeights();
 		}
+
 	}
 
 
 	public Output feed(Input in){
-		// to be completed
+
 		double[] ret=new double[10];
 
 		Iterator<InputNeuron> inputNeuronIterator = inLayer.iterator();
@@ -70,7 +72,6 @@ public class OneHiddenLayer extends ANN{
 		while(inputNeuronIterator.hasNext()){
 			inputNeuronIterator.next().feed(inIterator.next());
 		}
-
 		for (Neuron aHiddenLayer : hiddenLayer) {
 			aHiddenLayer.feed();
 		}
@@ -78,7 +79,6 @@ public class OneHiddenLayer extends ANN{
 			outLayer.get(j).feed();
 			ret[j]=outLayer.get(j).getCurrentOutput();
 		}
-
 		return new Output(ret);
 	}
 
@@ -86,32 +86,28 @@ public class OneHiddenLayer extends ANN{
 
 	public Map<Integer,Double> train(int nbIterations) {
 
-		// to be completed
 		Map<Integer,Double> ret=new HashMap<Integer, Double>();
 		Iterator<Neuron> outiterator = outLayer.iterator();
 		int j=0;
 		double error=0;
 		double[] value=new double[10];
 		for (int i = 0; i < nbIterations; i++) {
-			error=test(testingData,i);
 			for (Map.Entry<Input, Output> d : trainingData.entrySet()) {
 				Input in = d.getKey();
 				value=d.getValue().getVal();
 				feed(in);
-				j=0;
-				outiterator=outLayer.iterator();
-				for (int k = 0; k < 10; k++) {
-					outLayer.get(k).error=(value[k]-outLayer.get(k).getCurrentOutput())*
-							outLayer.get(k).getCurrentOutput()*(1-outLayer.get(k).getCurrentOutput());
-				}
 				while (outiterator.hasNext()){
 					outiterator.next().backPropagate(value[j]);
 					j++;
 				}
+				for (Neuron hiddenneuron : hiddenLayer) {
+					hiddenneuron.backPropagate(1);
+				}
+
 				j=0;
 				outiterator=outLayer.iterator();
 			}
-
+			error=test(testingData,i+1);
 			ret.put(i,error);
 		}
 		return ret;
